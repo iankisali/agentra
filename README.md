@@ -1,38 +1,146 @@
-# Alex - the Agentic Learning Equities Explainer
+# Agentra
 
-## Multi-agent Enterprise-Grade SaaS Financial Planner
+**Agentra** is an agentic AI-powered financial platform designed to provide continuous portfolio analysis, retirement planning, and intelligent financial advisory.
 
-![Course Image](assets/alex.png)
+It combines a multi-agent architecture with cloud-native infrastructure to deliver real-time insights and long-term financial optimization.
 
-_If you're looking at this in Cursor, please right click on the filename in the Explorer on the left, and select "Open preview", to view it in formatted glory._
+---
 
-### Welcome to The Capstone Project for Week 3 and Week 4!
+## Overview
 
-#### The directories:
+Agentra does the following:
 
-1. **guides** - this is where you will live - step by step guides to deploy to production
-2. **backend** - the agent code, organized into subdirectories, each a uv project (as is the backend parent directory)
-3. **frontend** - a NextJS React frontend integrated with Clerk
-4. **terraform** - separate terraform subdirectories with state for each part
-5. **scripts** - the final deployment script
+* Analyzing equity portfolios
+* Forecasting retirement outcomes
+* Generating actionable financial insights
+* Adapting strategies based on market conditions and user behavior
 
-#### Order of play:
+Agentra uses **agentic AI** to proactively manage and optimize financial decisions.
 
-##### Week 3
+---
 
-- On Week 3 Day 3, we will do 1_permissions and 2_sagemaker
-- On Week 3 Day 4, we will do 3_ingest
-- On Week 3 Day 5, we will do 4_researcher
+## Features
 
-##### Week 4
+* **Multi-Agent System**
 
-- On Week 4 Day 1, we will do 5_database
-- On Week 4 Day 2, we will do 6_agents
-- On Week 4 Day 3, we will do 7_frontend
-- On Week 4 Day 4, we will do 8_enterprise
+  * Planner Agent (orchestration)
+  * Reporter Agent (portfolio analysis)
+  * Retirement Agent(long-term planning)
+  * Researcher Agent(market intelligence)
+  * Tagger Agent(asset classification)
+  * Charter Agent(visualization)
 
-#### Keep in mind
+* **Portfolio Intelligence**
 
-- Please submit your community_contributions, including links to your repos, in the production repo community_contributions folder
-- Regularly do a git pull to get the latest code
-- Reach out in Udemy or email (ed@edwarddonner.com) if I can help! This is a gigantic project and I am here to help you deliver it!
+  * Performance analysis
+  * Risk assessment
+  * Diversification insights
+
+* **Retirement Planning**
+
+  * Scenario modeling
+  * Goal tracking
+  * Financial projections
+
+* **Cloud-Native Architecture**
+
+  * Serverless compute (AWS Lambda, App Runner)
+  * Event-driven orchestration (SQS)
+  * Scalable database (Aurora Serverless)
+
+* **SaaS Platform**
+
+  * Multi-user support
+  * Secure data isolation
+  * Web-based dashboard (Next.js)
+
+---
+
+## Architecture (High-Level)
+
+```
+User → Frontend (Next.js)
+      → API Layer
+      → Planner Agent (Orchestrator)
+          ├── Reporter Agent
+          ├── Retirement Agent
+          ├── Researcher Agent
+          ├── Tagger Agent
+          └── Charter Agent
+                ↓
+          Aggregated Insights → Database → User
+```
+
+---
+
+## Project Structure
+
+```
+backend/        # Agents, API, ingestion, database
+frontend/       # Next.js SaaS dashboard
+terraform/      # Infrastructure as Code (AWS)
+docs/           # System-level documentation
+guides/         # Step-by-step build roadmap
+scripts/        # Deployment and utility scripts
+env/            # Environment configurations
+```
+
+---
+
+## Tech Stack
+
+* **Backend:** Python (uv), FastAPI, OpenAI Agents SDK
+* **Frontend:** Next.js (React)
+* **Cloud:** AWS (Lambda, SQS, Aurora, App Runner, Bedrock)
+* **AI/ML:** AWS Bedrock (Nova Pro), embeddings via SageMaker
+* **Infrastructure:** Terraform
+
+---
+
+## Development Workflow
+
+Branching strategy:
+
+```
+feature/* → dev → main
+```
+
+* `feature/*` → new features
+* `dev` → integration branch
+* `main` → production-ready
+
+---
+
+## Development Approach
+
+This project follows a **sequential build strategy**:
+
+1. Infrastructure setup
+2. Data and ingestion pipeline
+3. Multi-agent system
+4. API and frontend
+5. Production readiness
+
+Each step builds toward a **fully functional SaaS system**.
+
+---
+
+## Status
+
+Agentra is currently in active development.
+
+* Core infrastructure and agents are being built incrementally
+* Features are implemented step-by-step following the roadmap
+* Documentation evolves alongside the system
+
+---
+
+Agentra aims to become:
+
+> A fully autonomous financial intelligence platform that continuously analyzes, explains, and optimizes user wealth.
+
+---
+
+## Contributing
+
+This is currently a focused development project. Contribution guidelines will be added as the system stabilizes.
