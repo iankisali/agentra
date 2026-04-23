@@ -2,3 +2,12 @@ AGENTS.md
 gameplan.md
 CLAUDE.md
 guides/*
+.env
+terraform.tfvars
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.*.backup
+.terraform.lock.hcl
