@@ -11,3 +11,14 @@ terraform.tfvars
 *.tfstate.backup
 *.tfstate.*.backup
 .terraform.lock.hcl
+
+# Python
+**/.venv/
+**/__pycache__/
+*.pyc
+
+# Lambda build artifacts
+lambda_function.zip
+
+# OS
+.DS_Store
