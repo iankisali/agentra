@@ -41,7 +41,7 @@ def get_cluster_details(region):
                 cluster = response['DBClusters'][0]
                 if not cluster.get('HttpEndpointEnabled', False):
                     print("❌ Data API is not enabled on the Aurora cluster")
-                    print("💡 Run: aws rds modify-db-cluster --db-cluster-identifier alex-aurora-cluster --enable-http-endpoint --apply-immediately")
+                    print("💡 Run: aws rds modify-db-cluster --db-cluster-identifier agentra-aurora-cluster --enable-http-endpoint --apply-immediately")
                     return None, None
             else:
                 print(f"❌ Aurora cluster '{cluster_id}' not found")
@@ -66,11 +66,11 @@ def get_cluster_details(region):
     try:
         # Get cluster ARN
         response = rds_client.describe_db_clusters(
-            DBClusterIdentifier='alex-aurora-cluster'
+            DBClusterIdentifier='agentra-aurora-cluster'
         )
         
         if not response['DBClusters']:
-            print("❌ Aurora cluster 'alex-aurora-cluster' not found")
+            print("❌ Aurora cluster 'agentra-aurora-cluster' not found")
             return None, None
         
         cluster = response['DBClusters'][0]
@@ -79,15 +79,15 @@ def get_cluster_details(region):
         # Check if Data API is enabled
         if not cluster.get('HttpEndpointEnabled', False):
             print("❌ Data API is not enabled on the Aurora cluster")
-            print("💡 Run: aws rds modify-db-cluster --db-cluster-identifier alex-aurora-cluster --enable-http-endpoint --apply-immediately")
+            print("💡 Run: aws rds modify-db-cluster --db-cluster-identifier agentra-aurora-cluster --enable-http-endpoint --apply-immediately")
             return None, None
         
-        # Find the most recently created aurora secret for alex
+        # Find the most recently created aurora secret for agentra
         secrets = secrets_client.list_secrets()
         aurora_secrets = []
         
         for secret in secrets['SecretList']:
-            if 'aurora' in secret['Name'].lower() and 'alex' in secret['Name'].lower():
+            if 'aurora' in secret['Name'].lower() and 'agentra' in secret['Name'].lower():
                 aurora_secrets.append(secret)
         
         if not aurora_secrets:
@@ -125,7 +125,7 @@ def test_data_api(cluster_arn, secret_arn, region):
         response = client.execute_statement(
             resourceArn=cluster_arn,
             secretArn=secret_arn,
-            database='alex',
+            database='agentra',
             sql='SELECT 1 as test_connection, current_timestamp as server_time'
         )
         
@@ -141,7 +141,7 @@ def test_data_api(cluster_arn, secret_arn, region):
         error_code = e.response['Error']['Code']
         if error_code == 'BadRequestException':
             # This might mean the database doesn't exist yet
-            print(f"   ⚠️  Database 'alex' might not exist or credentials are incorrect")
+            print(f"   ⚠️  Database 'agentra' might not exist or credentials are incorrect")
             print(f"   Error: {e.response['Error']['Message']}")
             
             # Try without specifying database
@@ -152,7 +152,7 @@ def test_data_api(cluster_arn, secret_arn, region):
                     secretArn=secret_arn,
                     sql='SELECT current_database()'
                 )
-                print(f"   ✅ Connection successful (but 'alex' database may not exist)")
+                print(f"   ✅ Connection successful (but 'agentra' database may not exist)")
                 return True
             except:
                 pass
@@ -166,7 +166,7 @@ def test_data_api(cluster_arn, secret_arn, region):
         response = client.execute_statement(
             resourceArn=cluster_arn,
             secretArn=secret_arn,
-            database='alex',
+            database='agentra',
             sql="""
                 SELECT table_name 
                 FROM information_schema.tables 
@@ -194,8 +194,8 @@ def test_data_api(cluster_arn, secret_arn, region):
         response = client.execute_statement(
             resourceArn=cluster_arn,
             secretArn=secret_arn,
-            database='alex',
-            sql="SELECT pg_database_size('alex') as size_bytes"
+            database='agentra',
+            sql="SELECT pg_database_size('agentra') as size_bytes"
         )
         
         if response['records']:

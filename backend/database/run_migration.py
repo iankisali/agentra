@@ -15,7 +15,7 @@ load_dotenv(override=True)
 # Get config from environment
 cluster_arn = os.environ.get("AURORA_CLUSTER_ARN")
 secret_arn = os.environ.get("AURORA_SECRET_ARN")
-database = os.environ.get("AURORA_DATABASE", "alex")
+database = os.environ.get("AURORA_DATABASE", "agentra")
 region = os.environ.get("DEFAULT_AWS_REGION", "us-east-1")
 
 if not cluster_arn or not secret_arn:
@@ -24,7 +24,7 @@ if not cluster_arn or not secret_arn:
 client = boto3.client("rds-data", region_name=region)
 
 # Read migration file
-with open("migrations/001_schema.sql") as f:
+with open("schema.sql") as f:
     sql = f.read()
 
 # Define statements in order (since splitting is complex)

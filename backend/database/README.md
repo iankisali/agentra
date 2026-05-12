@@ -63,6 +63,9 @@ AURORA_SECRET_ARN=arn:aws:secretsmanager:us-east-1:123456789:secret:agentra-auro
 ### First-time setup
 
 ```bash
+# 0. Install dependencies (required once)
+uv sync
+
 # 1. Test connectivity
 uv run test_data.py
 
