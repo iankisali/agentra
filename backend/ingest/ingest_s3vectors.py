@@ -9,7 +9,7 @@ import datetime
 import uuid
 
 # Environment variables
-VECTOR_BUCKET = os.environ.get('VECTOR_BUCKET', 'alex-vectors')
+VECTOR_BUCKET = os.environ.get('VECTOR_BUCKET', 'agentra-vectors')
 SAGEMAKER_ENDPOINT = os.environ.get('SAGEMAKER_ENDPOINT')
 INDEX_NAME = os.environ.get('INDEX_NAME', 'financial-research')
 

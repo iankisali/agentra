@@ -25,3 +25,5 @@ lambda_function.zip
 
 # OS
 .DS_Store
+
+*.lock

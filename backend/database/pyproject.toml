@@ -1,7 +1,7 @@
 [project]
 name = "agentra-db"
 version = "0.1.0"
-description = "Database package for Alex Financial Planner with Aurora Data API"
+description = "Database package for Agentra Financial Planner with Aurora Data API"
 requires-python = ">=3.12"
 dependencies = [
     "boto3>=1.40.8",
