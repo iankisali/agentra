@@ -142,7 +142,7 @@ def create_test_data(db_models: Database):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Reset Alex database')
+    parser = argparse.ArgumentParser(description='Reset Agentra database')
     parser.add_argument('--with-test-data', action='store_true',
                        help='Create test user with sample portfolio')
     parser.add_argument('--skip-drop', action='store_true',
@@ -163,7 +163,7 @@ def main():
         # Run migrations
         print("\n📝 Running migrations...")
         import subprocess
-        result = subprocess.run(['uv', 'run', 'run_migrations.py'], 
+        result = subprocess.run(['uv', 'run', 'run_migration.py'], 
                               capture_output=True, text=True)
         
         if result.returncode != 0:

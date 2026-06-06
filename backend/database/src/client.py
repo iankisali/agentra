@@ -44,7 +44,7 @@ class DataAPIClient:
         """
         self.cluster_arn = cluster_arn or os.environ.get("AURORA_CLUSTER_ARN")
         self.secret_arn = secret_arn or os.environ.get("AURORA_SECRET_ARN")
-        self.database = database or os.environ.get("AURORA_DATABASE", "alex")
+        self.database = database or os.environ.get("AURORA_DATABASE", "agentra")
 
         if not self.cluster_arn or not self.secret_arn:
             raise ValueError(

@@ -19,9 +19,14 @@ terraform.tfvars
 
 # Lambda build artifacts
 lambda_function.zip
+*_lambda.zip
+shared_layer.zip
 
 # Playwright
 **/.playwright-mcp/
 
 # OS
 .DS_Store
+
+*.lock
+*.zip
