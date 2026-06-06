@@ -15,10 +15,10 @@ from pathlib import Path
 
 AGENT_FILES = {
     "tagger": ["lambda_handler.py", "agent.py", "templates.py", "observability.py"],
-    "reporter": ["lambda_handler.py", "agent.py", "observability.py", "judge.py"],
-    "charter": ["lambda_handler.py", "agent.py", "observability.py"],
-    "retirement": ["lambda_handler.py", "agent.py", "observability.py"],
-    "planner": ["lambda_handler.py", "agent.py", "observability.py", "market.py", "prices.py"],
+    "reporter": ["lambda_handler.py", "agent.py", "templates.py", "observability.py", "judge.py"],
+    "charter": ["lambda_handler.py", "agent.py", "templates.py", "observability.py"],
+    "retirement": ["lambda_handler.py", "agent.py", "templates.py", "observability.py"],
+    "planner": ["lambda_handler.py", "agent.py", "templates.py", "observability.py", "market.py", "prices.py"],
 }
 
 

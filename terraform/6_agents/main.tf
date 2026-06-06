@@ -204,6 +204,7 @@ resource "aws_lambda_layer_version" "shared_deps" {
   description         = "Shared Python dependencies for all Agentra agents"
   s3_bucket           = aws_s3_bucket.lambda_packages.id
   s3_key              = aws_s3_object.shared_layer.key
+  source_code_hash    = fileexists("${path.module}/../../backend/shared_layer.zip") ? filebase64sha256("${path.module}/../../backend/shared_layer.zip") : null
   compatible_runtimes = ["python3.12"]
   
   depends_on = [aws_s3_object.shared_layer]

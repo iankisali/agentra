@@ -26,9 +26,9 @@ def run_command(cmd, cwd=None):
 def main():
     backend_dir = Path(__file__).parent.absolute()
 
-    # Use the tagger's requirements as the base (all agents share the same heavy deps)
-    # The layer contains everything EXCEPT the agent-specific code and agentra-db
-    tagger_dir = backend_dir / "tagger"
+    # Collect requirements from ALL agents (union of all dependencies)
+    # so the shared layer covers any package that any agent imports
+    AGENTS = ["tagger", "reporter", "charter", "retirement", "planner"]
 
     print("=" * 60)
     print("BUILDING SHARED LAMBDA LAYER")
@@ -47,12 +47,35 @@ def main():
         layer_pkg_dir = temp_path / "python" / "lib" / "python3.12" / "site-packages"
         layer_pkg_dir.mkdir(parents=True)
 
-        # Export requirements from tagger (representative of all agents)
-        print("\nExporting shared requirements from uv.lock...")
-        requirements_result = run_command(
-            ["uv", "export", "--no-hashes", "--no-emit-project"],
-            cwd=str(tagger_dir),
-        )
+        # Export requirements from each agent and merge them
+        # Use package names only (no version pins) to let pip resolve compatible versions
+        # across all agents' requirements without conflicts.
+        print("\nExporting requirements from all agents...")
+        package_names: set[str] = set()
+        for agent in AGENTS:
+            agent_dir = backend_dir / agent
+            if not (agent_dir / "uv.lock").exists():
+                print(f"  Skipping {agent} (no uv.lock)")
+                continue
+            req_text = run_command(
+                ["uv", "export", "--no-hashes", "--no-emit-project"],
+                cwd=str(agent_dir),
+            )
+            for line in req_text.splitlines():
+                stripped = line.strip()
+                if not stripped or stripped.startswith("#") or stripped.startswith("-e "):
+                    continue
+                # Extract package name (strip version specifier and markers)
+                pkg = stripped
+                for sep in ("==", ">=", "<=", "~=", "!=", ">", "<", ";"):
+                    if sep in pkg:
+                        pkg = pkg.split(sep)[0].strip()
+                        break
+                if pkg:
+                    package_names.add(pkg)
+
+        all_requirements = sorted(package_names)
+        print(f"  Combined {len(all_requirements)} unique packages across {len(AGENTS)} agents")
 
         EXCLUDE_PREFIXES = (
             "pyperclip",   # clipboard, not needed in Lambda
@@ -64,12 +87,14 @@ def main():
             "hf_xet",
             "tokenizers",  # HuggingFace tokenizers - not needed at runtime
             "pygments",    # syntax highlighting - not needed at runtime
+            "pywin32",     # Windows-only, not available for linux/amd64
+            "colorama",    # Windows terminal colors, not needed in Lambda
         )
         EXCLUDE_CONTAINS = ("agentra-db",)
 
         filtered = []
         excluded = []
-        for line in requirements_result.splitlines():
+        for line in sorted(all_requirements):
             stripped = line.strip()
             if any(stripped.startswith(p) for p in EXCLUDE_PREFIXES):
                 excluded.append(stripped)
