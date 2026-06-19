@@ -1,0 +1,13 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/404": "pages/404.html",
+  "/500": "pages/500.html",
+  "/accounts": "pages/accounts.html",
+  "/accounts/[id]": "pages/accounts/[id].html",
+  "/advisor-team": "pages/advisor-team.html",
+  "/analysis": "pages/analysis.html",
+  "/dashboard": "pages/dashboard.html",
+  "/": "pages/index.html"
+}
