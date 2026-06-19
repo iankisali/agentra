@@ -3,9 +3,18 @@ terraform {
 
   required_providers {
     aws = {
-        source = "hashicorp/aws"
-        version = "~> 5.70"
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
     }
+  }
+
+  backend "s3" {
+    bucket         = "agentra-tfstate-773872230003"
+    key            = "1_sagemaker/terraform.tfstate"
+    region         = "us-east-1"
+    profile        = "ai"
+    dynamodb_table = "agentra-tfstate-locks"
+    encrypt        = true
   }
 }
 

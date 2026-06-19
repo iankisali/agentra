@@ -6,6 +6,15 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  backend "s3" {
+    bucket         = "agentra-tfstate-773872230003"
+    key            = "7_frontend/terraform.tfstate"
+    region         = "us-east-1"
+    profile        = "ai"
+    dynamodb_table = "agentra-tfstate-locks"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
@@ -20,17 +29,23 @@ data "aws_region" "current" {}
 
 # Reference Part 5 Database resources
 data "terraform_remote_state" "database" {
-  backend = "local"
+  backend = "s3"
   config = {
-    path = "../5_database/terraform.tfstate"
+    bucket  = "agentra-tfstate-773872230003"
+    key     = "5_database/terraform.tfstate"
+    region  = "us-east-1"
+    profile = "ai"
   }
 }
 
 # Reference Part 6 Agents resources
 data "terraform_remote_state" "agents" {
-  backend = "local"
+  backend = "s3"
   config = {
-    path = "../6_agents/terraform.tfstate"
+    bucket  = "agentra-tfstate-773872230003"
+    key     = "6_agents/terraform.tfstate"
+    region  = "us-east-1"
+    profile = "ai"
   }
 }
 

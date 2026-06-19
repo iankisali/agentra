@@ -7,6 +7,15 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  backend "s3" {
+    bucket         = "agentra-tfstate-773872230003"
+    key            = "2_ingest/terraform.tfstate"
+    region         = "us-east-1"
+    profile        = "ai"
+    dynamodb_table = "agentra-tfstate-locks"
+    encrypt        = true
+  }
 }
 
 provider "aws" {

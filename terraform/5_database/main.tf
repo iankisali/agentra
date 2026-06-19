@@ -11,9 +11,15 @@ terraform {
       version = "~> 3.5"
     }
   }
-  
-  # Using local backend - state will be stored in terraform.tfstate in this directory
-  # This is automatically gitignored for security
+
+  backend "s3" {
+    bucket         = "agentra-tfstate-773872230003"
+    key            = "5_database/terraform.tfstate"
+    region         = "us-east-1"
+    profile        = "ai"
+    dynamodb_table = "agentra-tfstate-locks"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
