@@ -1,0 +1,5 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[284],{7284:(e,t,a)=>{a.d(t,{clerkDevelopmentCache:()=>c,createKeylessModeMessage:()=>_});var s=a(6908);let _=e=>`
+\x1b[35m
+[Clerk]:\x1b[0m You are running in keyless mode.
+You can \x1b[35mclaim your keys\x1b[0m by visiting ${e.claimUrl}
+`,c=function(){if((0,s.b_)())return a.g.__clerk_internal_keyless_logger||(a.g.__clerk_internal_keyless_logger={__cache:new Map,log:function({cacheKey:e,msg:t}){var a;this.__cache.has(e)&&Date.now()<((null==(a=this.__cache.get(e))?void 0:a.expiresAt)||0)||(console.log(t),this.__cache.set(e,{expiresAt:Date.now()+6e5}))},run:async function(e,{cacheKey:t,onSuccessStale:a=6e5,onErrorStale:s=6e5}){var _,c;if(this.__cache.has(t)&&Date.now()<((null==(_=this.__cache.get(t))?void 0:_.expiresAt)||0))return null==(c=this.__cache.get(t))?void 0:c.data;try{let s=await e();return this.__cache.set(t,{expiresAt:Date.now()+a,data:s}),s}catch(e){throw this.__cache.set(t,{expiresAt:Date.now()+s}),e}}}),globalThis.__clerk_internal_keyless_logger}()}}]);

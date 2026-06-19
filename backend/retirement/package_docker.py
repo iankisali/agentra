@@ -99,7 +99,7 @@ def deploy_lambda(zip_path):
     import boto3
     
     lambda_client = boto3.client('lambda')
-    function_name = 'alex-retirement'
+    function_name = 'agentra-retirement'
     
     print(f"Deploying to Lambda function: {function_name}")
     

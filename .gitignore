@@ -4,6 +4,7 @@ CLAUDE.md
 guides/*
 .env
 terraform.tfvars
+.env*
 
 # Terraform
 **/.terraform/
@@ -30,3 +31,5 @@ shared_layer.zip
 
 *.lock
 *.zip
+
+node_modules
