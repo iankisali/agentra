@@ -1,146 +1,201 @@
 # Agentra
 
-**Agentra** is an agentic AI-powered financial platform designed to provide continuous portfolio analysis, retirement planning, and intelligent financial advisory.
+**Agentra** is a production-grade, agentic AI SaaS platform for portfolio analysis, financial advisory, and retirement planning.
 
-It combines a multi-agent architecture with cloud-native infrastructure to deliver real-time insights and long-term financial optimization.
+It uses a multi-agent architecture on AWS serverless infrastructure to continuously analyze financial data, generate insights, and optimize user financial outcomes.
 
 ---
 
-## Overview
+## Architecture
 
-Agentra does the following:
+```
+User → CloudFront → S3 (Next.js)
+                  → API Gateway → API Lambda → SQS
+                                                 ↓
+                                          Planner (Orchestrator)
+                                        ┌────┼────┬────┐
+                                    Reporter Charter Retirement Tagger
+                                        │       │        │        │
+                                        └───────┴────────┴────────┘
+                                                    ↓
+                              ┌──────────────────────────────────────┐
+                              │  Aurora PostgreSQL  │  AWS Bedrock   │
+                              │  S3 Vectors        │  SageMaker     │
+                              └──────────────────────────────────────┘
+```
 
-* Analyzing equity portfolios
-* Forecasting retirement outcomes
-* Generating actionable financial insights
-* Adapting strategies based on market conditions and user behavior
-
-Agentra uses **agentic AI** to proactively manage and optimize financial decisions.
+See `assets/agentra-architecture.drawio` for the full diagram.
 
 ---
 
 ## Features
 
-* **Multi-Agent System**
+- **Multi-Agent System** — Coordinated agents with single-responsibility design
+  - Planner (orchestration & task decomposition)
+  - Reporter (portfolio analysis & RAG)
+  - Retirement (long-term financial projections)
+  - Tagger (asset classification & enrichment)
+  - Charter (visualization & chart generation)
+  - Researcher (market intelligence via App Runner)
 
-  * Planner Agent (orchestration)
-  * Reporter Agent (portfolio analysis)
-  * Retirement Agent(long-term planning)
-  * Researcher Agent(market intelligence)
-  * Tagger Agent(asset classification)
-  * Charter Agent(visualization)
+- **Portfolio Intelligence** — Performance analysis, risk assessment, diversification insights
 
-* **Portfolio Intelligence**
+- **Retirement Planning** — Scenario modeling, goal tracking, financial projections
 
-  * Performance analysis
-  * Risk assessment
-  * Diversification insights
+- **Cloud-Native & Serverless** — Lambda, SQS, Aurora Serverless v2, Bedrock, App Runner
 
-* **Retirement Planning**
-
-  * Scenario modeling
-  * Goal tracking
-  * Financial projections
-
-* **Cloud-Native Architecture**
-
-  * Serverless compute (AWS Lambda, App Runner)
-  * Event-driven orchestration (SQS)
-  * Scalable database (Aurora Serverless)
-
-* **SaaS Platform**
-
-  * Multi-user support
-  * Secure data isolation
-  * Web-based dashboard (Next.js)
+- **SaaS Platform** — Multi-tenant with Clerk auth, secure data isolation, Next.js dashboard
 
 ---
 
-## Architecture (High-Level)
+## Tech Stack
 
-```
-User → Frontend (Next.js)
-      → API Layer
-      → Planner Agent (Orchestrator)
-          ├── Reporter Agent
-          ├── Retirement Agent
-          ├── Researcher Agent
-          ├── Tagger Agent
-          └── Charter Agent
-                ↓
-          Aggregated Insights → Database → User
-```
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js, Tailwind CSS, Recharts |
+| API | AWS API Gateway (HTTP) + Lambda (Python/FastAPI) |
+| Auth | Clerk (JWT validation in Lambda) |
+| Agents | OpenAI Agents SDK, LiteLLM, AWS Bedrock (Nova Pro) |
+| Queue | SQS (async job processing) |
+| Database | Aurora Serverless v2 PostgreSQL (Data API) |
+| Embeddings | SageMaker Serverless (sentence-transformers) |
+| Vectors | S3-based vector storage |
+| Market Data | Polygon.io |
+| Observability | Langfuse |
+| Infrastructure | Terraform (modularized, S3 remote state) |
+| Deployment | Docker (Lambda packaging), App Runner (Researcher) |
 
 ---
 
 ## Project Structure
 
 ```
-backend/        # Agents, API, ingestion, database
-frontend/       # Next.js SaaS dashboard
-terraform/      # Infrastructure as Code (AWS)
-docs/           # System-level documentation
-guides/         # Step-by-step build roadmap
-scripts/        # Deployment and utility scripts
-env/            # Environment configurations
+backend/
+├── agents/          # Agent design docs (AGENTS.md per agent)
+├── api/             # API Lambda (FastAPI + Mangum)
+├── charter/         # Charter agent
+├── core/            # Shared models, config, utils
+├── database/        # Schema, migrations, seed data
+├── ingest/          # Ingestion Lambda (vectors)
+├── planner/         # Planner/Orchestrator agent
+├── reporter/        # Reporter agent
+├── researcher/      # Researcher (App Runner service)
+├── retirement/      # Retirement agent
+└── tagger/          # Tagger agent
+
+frontend/            # Next.js SaaS dashboard
+
+terraform/
+├── 0_bootstrap/     # S3 state bucket + DynamoDB lock table
+├── 1_sagemaker/     # Embedding endpoint
+├── 2_ingest/        # Ingestion pipeline + API Gateway
+├── 3_researcher/    # App Runner + ECR
+├── 5_database/      # Aurora Serverless v2 + Secrets Manager
+├── 6_agents/        # 5 agent Lambdas + SQS + shared layer
+├── 7_frontend/      # S3 + CloudFront + API Lambda
+└── modules/
+    └── agent-lambda/  # Reusable module for agent Lambda resources
+
+scripts/             # deploy.py, run_local.py
+assets/              # Architecture diagrams
 ```
 
 ---
 
-## Tech Stack
+## Quick Start
 
-* **Backend:** Python (uv), FastAPI, OpenAI Agents SDK
-* **Frontend:** Next.js (React)
-* **Cloud:** AWS (Lambda, SQS, Aurora, App Runner, Bedrock)
-* **AI/ML:** AWS Bedrock (Nova Pro), embeddings via SageMaker
-* **Infrastructure:** Terraform
+### Prerequisites
+
+- AWS CLI configured (profile: `ai`)
+- Terraform >= 1.5
+- Docker (for Lambda packaging)
+- `uv` (Python package manager)
+- Node.js 18+ (frontend)
+
+### Infrastructure
+
+Deploy in order (see `terraform/README.md` for full details):
+
+```bash
+export AWS_PROFILE=ai
+
+cd terraform/0_bootstrap && terraform init && terraform apply   # State backend
+cd ../1_sagemaker       && terraform init && terraform apply   # Embeddings
+cd ../2_ingest          && terraform init && terraform apply   # Ingest pipeline
+cd ../3_researcher      && terraform init && terraform apply   # Researcher
+cd ../5_database        && terraform init && terraform apply   # Database
+cd ../6_agents          && terraform init && terraform apply   # Agent Lambdas
+cd ../7_frontend        && terraform init && terraform apply   # Frontend hosting
+```
+
+### Database Setup
+
+```bash
+cd backend/database
+uv sync
+uv run run_migration.py    # Create schema
+uv run seed_data.py        # Load instruments
+uv run verify_db.py        # Verify
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev                # Local development
+npm run build              # Production build
+```
+
+### Deploy (full)
+
+```bash
+cd scripts
+AWS_PROFILE=ai uv run deploy.py
+```
 
 ---
 
 ## Development Workflow
 
-Branching strategy:
-
-```
-feature/* → dev → main
-```
-
-* `feature/*` → new features
-* `dev` → integration branch
-* `main` → production-ready
+- Feature branches: `feature/*`
+- Production branch: `main`
+- All changes via PR with CI checks
 
 ---
 
-## Development Approach
+## Key Design Decisions
 
-This project follows a **sequential build strategy**:
+1. **Agent isolation** — Each agent is a separate Lambda with single responsibility
+2. **Event-driven** — SQS decouples the API from agent execution
+3. **Remote state** — S3 backend with DynamoDB locking for team collaboration
+4. **No hardcoded secrets** — Secrets in AWS Secrets Manager or gitignored `secrets.auto.tfvars`
+5. **Modular Terraform** — Reusable `agent-lambda` module, `for_each` over agent configs
+6. **Data API** — Aurora accessed via Data API (no VPC/NAT needed for Lambda)
 
-1. Infrastructure setup
-2. Data and ingestion pipeline
-3. Multi-agent system
-4. API and frontend
-5. Production readiness
+---
 
-Each step builds toward a **fully functional SaaS system**.
+## Environments
+
+| Environment | Purpose |
+|---|---|
+| `dev` | Active development |
+| `staging` | Pre-production validation |
+| `prod` | Live system |
 
 ---
 
 ## Status
 
-Agentra is currently in active development.
+Agentra is in active development with core infrastructure and agents deployed:
 
-* Core infrastructure and agents are being built incrementally
-* Features are implemented step-by-step following the roadmap
-* Documentation evolves alongside the system
-
----
-
-Agentra aims to become:
-
-> A fully autonomous financial intelligence platform that continuously analyzes, explains, and optimizes user wealth.
+- Infrastructure: fully provisioned and managed via Terraform
+- Agents: planner, reporter, charter, retirement, tagger deployed and functional
+- Frontend: Next.js dashboard deployed via CloudFront + S3
+- Observability: Langfuse integration (traces in progress)
 
 ---
 
-## Contributing
+## License
 
-This is currently a focused development project. Contribution guidelines will be added as the system stabilizes.
+See [LICENSE](LICENSE).
