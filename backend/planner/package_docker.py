@@ -104,26 +104,51 @@ def deploy_lambda(zip_path):
     """Deploy the Lambda function to AWS."""
     import boto3
     
-    lambda_client = boto3.client('lambda')
+    region = os.environ.get("AWS_DEFAULT_REGION", os.environ.get("DEFAULT_AWS_REGION", "us-east-1"))
+    profile = os.environ.get("AWS_PROFILE", "ai")
+    session = boto3.Session(profile_name=profile, region_name=region)
+    lambda_client = session.client('lambda')
+    s3_client = session.client('s3')
     function_name = 'agentra-planner'
     
-    print(f"Deploying to Lambda function: {function_name}")
+    # Check file size — Lambda direct upload limit is 50MB
+    size_mb = zip_path.stat().st_size / (1024 * 1024)
     
-    try:
-        # Try to update existing function
-        with open(zip_path, 'rb') as f:
+    if size_mb > 50:
+        # Upload via S3 (same bucket used by Terraform)
+        account_id = session.client('sts').get_caller_identity()['Account']
+        bucket = f"agentra-lambda-packages-{account_id}"
+        s3_key = "planner/planner_lambda.zip"
+        
+        print(f"Package is {size_mb:.1f} MB (> 50MB limit). Uploading via S3...")
+        print(f"  → s3://{bucket}/{s3_key}")
+        s3_client.upload_file(str(zip_path), bucket, s3_key)
+        
+        print(f"Deploying to Lambda function: {function_name}")
+        try:
             response = lambda_client.update_function_code(
                 FunctionName=function_name,
-                ZipFile=f.read()
+                S3Bucket=bucket,
+                S3Key=s3_key,
             )
-        print(f"Successfully updated Lambda function: {function_name}")
-        print(f"Function ARN: {response['FunctionArn']}")
-    except lambda_client.exceptions.ResourceNotFoundException:
-        print(f"Lambda function {function_name} not found. Please deploy via Terraform first.")
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error deploying Lambda: {e}")
-        sys.exit(1)
+            print(f"Successfully updated Lambda function: {function_name}")
+            print(f"Function ARN: {response['FunctionArn']}")
+        except lambda_client.exceptions.ResourceNotFoundException:
+            print(f"Lambda function {function_name} not found. Please deploy via Terraform first.")
+            sys.exit(1)
+    else:
+        print(f"Deploying to Lambda function: {function_name}")
+        try:
+            with open(zip_path, 'rb') as f:
+                response = lambda_client.update_function_code(
+                    FunctionName=function_name,
+                    ZipFile=f.read()
+                )
+            print(f"Successfully updated Lambda function: {function_name}")
+            print(f"Function ARN: {response['FunctionArn']}")
+        except lambda_client.exceptions.ResourceNotFoundException:
+            print(f"Lambda function {function_name} not found. Please deploy via Terraform first.")
+            sys.exit(1)
 
 def main():
     parser = argparse.ArgumentParser(description='Package Planner Lambda for deployment')

@@ -20,7 +20,7 @@ output "lambda_arns" {
 
 output "setup_instructions" {
   description = "Instructions for testing the agents"
-  value = <<-EOT
+  value       = <<-EOT
     
     Agent infrastructure deployed successfully!
     

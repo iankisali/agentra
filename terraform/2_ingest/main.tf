@@ -1,6 +1,6 @@
 terraform {
   required_version = ">= 1.5"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -19,7 +19,7 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
   profile = var.aws_profile
 }
 
@@ -28,7 +28,7 @@ data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket" "vector_store" {
   bucket = "agentra-vectors-${data.aws_caller_identity.current.account_id}"
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -38,7 +38,7 @@ resource "aws_s3_bucket" "vector_store" {
 #Enable bucket versioning
 resource "aws_s3_bucket_versioning" "vector_store" {
   bucket = aws_s3_bucket.vector_store.id
-  
+
   versioning_configuration {
     status = "Enabled"
   }
@@ -47,7 +47,7 @@ resource "aws_s3_bucket_versioning" "vector_store" {
 #Enable S3-SSE for bucket
 resource "aws_s3_bucket_server_side_encryption_configuration" "vector_store" {
   bucket = aws_s3_bucket.vector_store.id
-  
+
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
@@ -58,7 +58,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "vector_store" {
 #Enable public block access for vector store bucket
 resource "aws_s3_bucket_public_access_block" "vector_store" {
   bucket = aws_s3_bucket.vector_store.id
-  
+
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -68,7 +68,7 @@ resource "aws_s3_bucket_public_access_block" "vector_store" {
 #IAM role for lambda
 resource "aws_iam_role" "lambda_role" {
   name = "agentra-ingest-lambda-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -81,7 +81,7 @@ resource "aws_iam_role" "lambda_role" {
       }
     ]
   })
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -145,12 +145,12 @@ resource "aws_lambda_function" "ingest_function" {
 
   filename         = "${path.module}/../../backend/ingest/lambda_function.zip"
   source_code_hash = fileexists("${path.module}/../../backend/ingest/lambda_function.zip") ? filebase64sha256("${path.module}/../../backend/ingest/lambda_function.zip") : null
-  
-  handler = "ingest_s3vectors.lambda_handler"
-  runtime = "python3.12"
-  timeout = 60
+
+  handler     = "ingest_s3vectors.lambda_handler"
+  runtime     = "python3.12"
+  timeout     = 60
   memory_size = 512
-  
+
   environment {
     variables = {
       VECTOR_BUCKET      = aws_s3_bucket.vector_store.id
@@ -168,7 +168,7 @@ resource "aws_lambda_function" "ingest_function" {
 resource "aws_cloudwatch_log_group" "lambda_logs" {
   name              = "/aws/lambda/agentra-ingest"
   retention_in_days = 7
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -183,11 +183,11 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
 resource "aws_api_gateway_rest_api" "api_gateway" {
   name        = "agentra-api"
   description = "Agentra Financial Planner API"
-  
+
   endpoint_configuration {
     types = ["REGIONAL"]
   }
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -203,10 +203,10 @@ resource "aws_api_gateway_resource" "ingest" {
 
 # API Method
 resource "aws_api_gateway_method" "ingest_post" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
-  resource_id   = aws_api_gateway_resource.ingest.id
-  http_method   = "POST"
-  authorization = "NONE"
+  rest_api_id      = aws_api_gateway_rest_api.api_gateway.id
+  resource_id      = aws_api_gateway_resource.ingest.id
+  http_method      = "POST"
+  authorization    = "NONE"
   api_key_required = true
 }
 
@@ -215,10 +215,10 @@ resource "aws_api_gateway_integration" "lambda" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway.id
   resource_id = aws_api_gateway_resource.ingest.id
   http_method = aws_api_gateway_method.ingest_post.http_method
-  
+
   integration_http_method = "POST"
-  type                   = "AWS_PROXY"
-  uri                    = aws_lambda_function.ingest_function.invoke_arn
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.ingest_function.invoke_arn
 }
 
 # Lambda permission for API Gateway
@@ -233,7 +233,7 @@ resource "aws_lambda_permission" "api_gateway" {
 # API Deployment
 resource "aws_api_gateway_deployment" "api" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  
+
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.ingest.id,
@@ -241,7 +241,7 @@ resource "aws_api_gateway_deployment" "api" {
       aws_api_gateway_integration.lambda.id,
     ]))
   }
-  
+
   lifecycle {
     create_before_destroy = true
   }
@@ -252,7 +252,7 @@ resource "aws_api_gateway_stage" "api" {
   deployment_id = aws_api_gateway_deployment.api.id
   rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
   stage_name    = "prod"
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -262,7 +262,7 @@ resource "aws_api_gateway_stage" "api" {
 # API Key
 resource "aws_api_gateway_api_key" "api_key" {
   name = "agentra-api-key"
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -272,17 +272,17 @@ resource "aws_api_gateway_api_key" "api_key" {
 # Usage Plan
 resource "aws_api_gateway_usage_plan" "plan" {
   name = "agentra-usage-plan"
-  
+
   api_stages {
     api_id = aws_api_gateway_rest_api.api_gateway.id
     stage  = aws_api_gateway_stage.api.stage_name
   }
-  
+
   quota_settings {
     limit  = 10000
     period = "MONTH"
   }
-  
+
   throttle_settings {
     rate_limit  = 100
     burst_limit = 200

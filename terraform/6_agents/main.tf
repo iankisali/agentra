@@ -67,8 +67,8 @@ locals {
   # Planner gets more memory/timeout as orchestrator; others share defaults
   agents = {
     planner = {
-      timeout     = 900   # 15 minutes — orchestrates all other agents
-      memory_size = 2048  # 2 GB
+      timeout     = 900  # 15 minutes — orchestrates all other agents
+      memory_size = 2048 # 2 GB
       tag_name    = "orchestrator"
       extra_env = {
         VECTOR_BUCKET      = local.vector_bucket
@@ -134,9 +134,9 @@ resource "aws_sqs_queue" "analysis_jobs" {
   name                       = "agentra-analysis-jobs"
   delay_seconds              = 0
   max_message_size           = 262144
-  message_retention_seconds  = 86400  # 1 day
-  receive_wait_time_seconds  = 10     # Long polling
-  visibility_timeout_seconds = 910    # 15 min + 10s buffer (matches Planner timeout)
+  message_retention_seconds  = 86400 # 1 day
+  receive_wait_time_seconds  = 10    # Long polling
+  visibility_timeout_seconds = 910   # 15 min + 10s buffer (matches Planner timeout)
 
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.analysis_jobs_dlq.arn
@@ -161,8 +161,8 @@ resource "aws_iam_role" "lambda_agents_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
       Principal = { Service = "lambda.amazonaws.com" }
     }]
   })

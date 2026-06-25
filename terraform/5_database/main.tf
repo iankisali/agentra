@@ -1,6 +1,6 @@
 terraform {
   required_version = ">= 1.5"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -23,7 +23,7 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
   profile = var.aws_profile
 }
 
@@ -31,16 +31,16 @@ data "aws_caller_identity" "current" {}
 
 # Random password for database
 resource "random_password" "db_password" {
-  length  = 32
-  special = true
+  length           = 32
+  special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 # Secrets Manager secret for database credentials
 resource "aws_secretsmanager_secret" "db_credentials" {
   name                    = "agentra-aurora-credentials-${random_id.suffix.hex}"
-  recovery_window_in_days = 0  # For development - immediate deletion
-  
+  recovery_window_in_days = 0 # For development - immediate deletion
+
   tags = {
     Project = "agentra"
     Part    = "5"
@@ -74,7 +74,7 @@ data "aws_subnets" "default" {
 resource "aws_db_subnet_group" "aurora" {
   name       = "agentra-aurora-subnet-group"
   subnet_ids = data.aws_subnets.default.ids
-  
+
   tags = {
     Project = "agentra"
     Part    = "5"
@@ -86,7 +86,7 @@ resource "aws_security_group" "aurora" {
   name        = "agentra-aurora-sg"
   description = "Security group for Agentra Aurora cluster"
   vpc_id      = data.aws_vpc.default.id
-  
+
   # Allow PostgreSQL access from within VPC
   ingress {
     from_port   = 5432
@@ -94,14 +94,14 @@ resource "aws_security_group" "aurora" {
     protocol    = "tcp"
     cidr_blocks = [data.aws_vpc.default.cidr_block]
   }
-  
+
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   tags = {
     Project = "agentra"
     Part    = "5"
@@ -110,36 +110,36 @@ resource "aws_security_group" "aurora" {
 
 # Aurora Serverless v2 Cluster
 resource "aws_rds_cluster" "aurora" {
-  cluster_identifier     = "agentra-aurora-cluster"
-  engine                 = "aurora-postgresql"
-  engine_mode            = "provisioned"
-  engine_version         = "15.12"
-  database_name          = "agentra"
-  master_username        = "agentraadmin"
-  master_password        = random_password.db_password.result
-  
+  cluster_identifier = "agentra-aurora-cluster"
+  engine             = "aurora-postgresql"
+  engine_mode        = "provisioned"
+  engine_version     = "15.12"
+  database_name      = "agentra"
+  master_username    = "agentraadmin"
+  master_password    = random_password.db_password.result
+
   # Serverless v2 scaling configuration
   serverlessv2_scaling_configuration {
     min_capacity = var.min_capacity
     max_capacity = var.max_capacity
   }
-  
+
   # Enable Data API
   enable_http_endpoint = true
-  
+
   # Networking
   db_subnet_group_name   = aws_db_subnet_group.aurora.name
   vpc_security_group_ids = [aws_security_group.aurora.id]
-  
+
   # Backup and maintenance
-  backup_retention_period   = 7
-  preferred_backup_window   = "03:00-04:00"
+  backup_retention_period      = 7
+  preferred_backup_window      = "03:00-04:00"
   preferred_maintenance_window = "sun:04:00-sun:05:00"
-  
+
   # Development settings
   skip_final_snapshot = true
   apply_immediately   = true
-  
+
   tags = {
     Project = "agentra"
     Part    = "5"
@@ -148,14 +148,14 @@ resource "aws_rds_cluster" "aurora" {
 
 # Aurora Serverless v2 Instance
 resource "aws_rds_cluster_instance" "aurora" {
-  identifier          = "agentra-aurora-instance-1"
-  cluster_identifier  = aws_rds_cluster.aurora.id
-  instance_class      = "db.serverless"
-  engine              = aws_rds_cluster.aurora.engine
-  engine_version      = aws_rds_cluster.aurora.engine_version
-  
-  performance_insights_enabled = false  # Save costs in development
-  
+  identifier         = "agentra-aurora-instance-1"
+  cluster_identifier = aws_rds_cluster.aurora.id
+  instance_class     = "db.serverless"
+  engine             = aws_rds_cluster.aurora.engine
+  engine_version     = aws_rds_cluster.aurora.engine_version
+
+  performance_insights_enabled = false # Save costs in development
+
   tags = {
     Project = "agentra"
     Part    = "5"
@@ -165,7 +165,7 @@ resource "aws_rds_cluster_instance" "aurora" {
 # IAM role for Lambda to access Aurora Data API
 resource "aws_iam_role" "lambda_aurora_role" {
   name = "agentra-lambda-aurora-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -178,7 +178,7 @@ resource "aws_iam_role" "lambda_aurora_role" {
       }
     ]
   })
-  
+
   tags = {
     Project = "agentra"
     Part    = "5"
@@ -189,7 +189,7 @@ resource "aws_iam_role" "lambda_aurora_role" {
 resource "aws_iam_role_policy" "lambda_aurora_policy" {
   name = "agentra-lambda-aurora-policy"
   role = aws_iam_role.lambda_aurora_role.id
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

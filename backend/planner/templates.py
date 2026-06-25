@@ -9,11 +9,13 @@ Tools (use ONLY these three):
 - invoke_charter: Creates charts
 - invoke_retirement: Calculates retirement projections
 
-Steps:
-1. Call invoke_reporter if positions > 0
-2. Call invoke_charter if positions >= 2
-3. Call invoke_retirement if retirement goals exist
-4. Respond with "Done"
+IMPORTANT: You MUST call ALL applicable tools. Do NOT stop after calling just one.
 
-Use ONLY the three tools above.
+Steps (execute ALL steps in order):
+1. ALWAYS call invoke_reporter (generates the portfolio analysis narrative)
+2. ALWAYS call invoke_charter (creates portfolio visualizations)
+3. ALWAYS call invoke_retirement (calculates retirement projections)
+4. After ALL three tools have been called, respond with "Done"
+
+You MUST call all three tools before responding. Never skip a tool.
 """
