@@ -71,7 +71,7 @@ resource "aws_sagemaker_endpoint_configuration" "serverless_config" {
 
   production_variants {
     model_name = aws_sagemaker_model.embedding_model.name
-    
+
     serverless_config {
       memory_size_in_mb = 3072
       max_concurrency   = 2
@@ -83,7 +83,7 @@ resource "time_sleep" "wait_for_iam_propagation" {
   depends_on = [
     aws_iam_role_policy_attachment.sagemaker_full_access
   ]
-  
+
   create_duration = "15s"
 }
 
@@ -91,9 +91,9 @@ resource "time_sleep" "wait_for_iam_propagation" {
 resource "aws_sagemaker_endpoint" "embedding_endpoint" {
   name                 = "agentra-embedding-endpoint"
   endpoint_config_name = aws_sagemaker_endpoint_configuration.serverless_config.name
-  
+
   depends_on = [
     time_sleep.wait_for_iam_propagation
   ]
-  
+
 }

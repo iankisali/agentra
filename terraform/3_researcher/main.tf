@@ -1,6 +1,6 @@
 terraform {
   required_version = ">= 1.5"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -19,7 +19,7 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
   profile = var.aws_profile
 }
 
@@ -31,11 +31,11 @@ resource "aws_ecr_repository" "agentra_researcher" {
   name                 = "agentra-researcher"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
-  
+
   image_scanning_configuration {
     scan_on_push = false
   }
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -45,7 +45,7 @@ resource "aws_ecr_repository" "agentra_researcher" {
 # IAM role for App Runner
 resource "aws_iam_role" "app_runner_role" {
   name = "agentra-app-runner-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -65,7 +65,7 @@ resource "aws_iam_role" "app_runner_role" {
       }
     ]
   })
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -81,7 +81,7 @@ resource "aws_iam_role_policy_attachment" "app_runner_ecr_access" {
 # IAM role for App Runner instance (runtime access to AWS services)
 resource "aws_iam_role" "app_runner_instance_role" {
   name = "agentra-app-runner-instance-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -94,7 +94,7 @@ resource "aws_iam_role" "app_runner_instance_role" {
       }
     ]
   })
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -105,7 +105,7 @@ resource "aws_iam_role" "app_runner_instance_role" {
 resource "aws_iam_role_policy" "app_runner_instance_bedrock_access" {
   name = "agentra-app-runner-instance-bedrock-policy"
   role = aws_iam_role.app_runner_instance_role.id
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -125,17 +125,17 @@ resource "aws_iam_role_policy" "app_runner_instance_bedrock_access" {
 # App Runner service
 resource "aws_apprunner_service" "researcher" {
   service_name = "agentra-researcher"
-  
+
   source_configuration {
     auto_deployments_enabled = false
-    
+
     # Configure authentication for private ECR repository
     authentication_configuration {
       access_role_arn = aws_iam_role.app_runner_role.arn
     }
-    
+
     image_repository {
-      image_identifier      = "${aws_ecr_repository.agentra_researcher.repository_url}:latest"
+      image_identifier = "${aws_ecr_repository.agentra_researcher.repository_url}:latest"
       image_configuration {
         port = "8000"
         runtime_environment_variables = {
@@ -148,13 +148,13 @@ resource "aws_apprunner_service" "researcher" {
       image_repository_type = "ECR"
     }
   }
-  
+
   instance_configuration {
-    cpu    = "1 vCPU"
-    memory = "2 GB"
+    cpu               = "1 vCPU"
+    memory            = "2 GB"
     instance_role_arn = aws_iam_role.app_runner_instance_role.arn
   }
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -165,7 +165,7 @@ resource "aws_apprunner_service" "researcher" {
 resource "aws_iam_role" "eventbridge_role" {
   count = var.scheduler_enabled ? 1 : 0
   name  = "agentra-eventbridge-scheduler-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -178,7 +178,7 @@ resource "aws_iam_role" "eventbridge_role" {
       }
     ]
   })
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -190,21 +190,21 @@ resource "aws_lambda_function" "scheduler_lambda" {
   count         = var.scheduler_enabled ? 1 : 0
   function_name = "agentra-researcher-scheduler"
   role          = aws_iam_role.lambda_scheduler_role[0].arn
-  
+
   filename         = "${path.module}/../../backend/scheduler/lambda_function.zip"
   source_code_hash = fileexists("${path.module}/../../backend/scheduler/lambda_function.zip") ? filebase64sha256("${path.module}/../../backend/scheduler/lambda_function.zip") : null
-  
+
   handler     = "lambda_function.handler"
   runtime     = "python3.12"
   timeout     = 180
   memory_size = 256
-  
+
   environment {
     variables = {
       APP_RUNNER_URL = aws_apprunner_service.researcher.service_url
     }
   }
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -215,7 +215,7 @@ resource "aws_lambda_function" "scheduler_lambda" {
 resource "aws_iam_role" "lambda_scheduler_role" {
   count = var.scheduler_enabled ? 1 : 0
   name  = "agentra-scheduler-lambda-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -228,7 +228,7 @@ resource "aws_iam_role" "lambda_scheduler_role" {
       }
     ]
   })
-  
+
   tags = {
     Project = "agentra"
     Part    = "3"
@@ -246,13 +246,13 @@ resource "aws_iam_role_policy_attachment" "lambda_scheduler_basic" {
 resource "aws_scheduler_schedule" "research_schedule" {
   count = var.scheduler_enabled ? 1 : 0
   name  = "agentra-research-schedule"
-  
+
   flexible_time_window {
     mode = "OFF"
   }
-  
+
   schedule_expression = "rate(2 hours)"
-  
+
   target {
     arn      = aws_lambda_function.scheduler_lambda[0].arn
     role_arn = aws_iam_role.eventbridge_role[0].arn
@@ -274,7 +274,7 @@ resource "aws_iam_role_policy" "eventbridge_invoke_lambda" {
   count = var.scheduler_enabled ? 1 : 0
   name  = "InvokeLambdaPolicy"
   role  = aws_iam_role.eventbridge_role[0].id
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

@@ -34,3 +34,5 @@ shared_layer.zip
 *.zip
 
 node_modules
+.next
+out
