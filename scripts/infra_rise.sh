@@ -217,8 +217,8 @@ deploy_layer() {
     echo -e "${BLUE}  → seed_data.py${NC}"
     (cd "$db_dir" && uv run seed_data.py)
 
-    # echo -e "${BLUE}  → reset_db.py --with-test-data${NC}"
-    # (cd "$db_dir" && uv run reset_db.py --with-test-data)
+    echo -e "${BLUE}  → reset_db.py --with-test-data --skip-drop${NC}"
+    (cd "$db_dir" && uv run reset_db.py --with-test-data --skip-drop)
 
     echo -e "${GREEN}✓ Database migrated, seeded, and .env updated${NC}"
   fi
